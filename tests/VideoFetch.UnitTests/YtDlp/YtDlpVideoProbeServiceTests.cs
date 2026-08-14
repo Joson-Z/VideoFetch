@@ -96,6 +96,23 @@ public sealed class YtDlpVideoProbeServiceTests
         Assert.DoesNotContain("github.com", exception.Message);
     }
 
+    [TestMethod]
+    public async Task ProbeAsync_WithEdgeSelected_UsesEdgeNameEvenWhenYtDlpReportsChromeDatabase()
+    {
+        CapturingProcessRunner runner = new(new ProcessResult(
+            1,
+            string.Empty,
+            "ERROR: Could not copy Chrome cookie database. See https://github.com/yt-dlp/yt-dlp/issues/7271 for more info"));
+        YtDlpVideoProbeService service = CreateService(runner);
+
+        VideoProbeException exception = await Assert.ThrowsExactlyAsync<VideoProbeException>(() =>
+            service.ProbeAsync(VideoUrl, new LoginSource.Browser(BrowserType.Edge, "Default")));
+
+        StringAssert.Contains(exception.Message, "无法读取 Edge 登录信息");
+        StringAssert.Contains(exception.Message, "完全退出 Edge");
+        Assert.DoesNotContain("Chrome", exception.Message);
+    }
+
     private static YtDlpVideoProbeService CreateService(IProcessRunner runner) =>
         new(
             new YtDlpConfiguration(),

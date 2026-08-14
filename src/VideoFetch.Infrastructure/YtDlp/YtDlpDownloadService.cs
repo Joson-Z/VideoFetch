@@ -3,6 +3,7 @@ using VideoFetch.Application.Files;
 using VideoFetch.Application.Media;
 using VideoFetch.Application.Processes;
 using VideoFetch.Application.Tooling;
+using VideoFetch.Domain.Authentication;
 using VideoFetch.Domain.Downloads;
 using VideoFetch.Domain.Media;
 using VideoFetch.Infrastructure.Processes;
@@ -78,7 +79,7 @@ public sealed class YtDlpDownloadService(
             cancellationToken).ConfigureAwait(false);
         if (!processResult.IsSuccess)
         {
-            throw new DownloadException(BuildSafeError(processResult));
+            throw new DownloadException(BuildSafeError(processResult, request.LoginSource));
         }
 
         string? reportedPath = progressParser.FindOutputPath(processResult.StandardOutput);
@@ -166,6 +167,18 @@ public sealed class YtDlpDownloadService(
         return fullPath;
     }
 
-    private static string BuildSafeError(ProcessResult result)
-        => YtDlpErrorMessageBuilder.Build(result, $"下载进程退出码：{result.ExitCode}");
+    private static string BuildSafeError(ProcessResult result, LoginSource loginSource)
+    {
+        string message = YtDlpErrorMessageBuilder.Build(result, $"下载进程退出码：{result.ExitCode}");
+        if (loginSource is not LoginSource.Browser browser
+            || !message.StartsWith("无法读取 ", StringComparison.Ordinal))
+        {
+            return message;
+        }
+
+        string selectedBrowser = browser.Type == BrowserType.Edge ? "Edge" : "Chrome";
+        return message
+            .Replace("Chrome", selectedBrowser, StringComparison.Ordinal)
+            .Replace("Edge", selectedBrowser, StringComparison.Ordinal);
+    }
 }

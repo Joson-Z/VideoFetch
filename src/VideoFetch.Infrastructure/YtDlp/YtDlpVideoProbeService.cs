@@ -47,7 +47,7 @@ public sealed class YtDlpVideoProbeService(
 
         if (!result.IsSuccess)
         {
-            throw new VideoProbeException(BuildSafeError(result));
+            throw new VideoProbeException(BuildSafeError(result, loginSource));
         }
 
         return metadataParser.Parse(result.StandardOutput, url);
@@ -70,6 +70,23 @@ public sealed class YtDlpVideoProbeService(
         return arguments;
     }
 
-    private static string BuildSafeError(ProcessResult result)
-        => YtDlpErrorMessageBuilder.Build(result, "无法读取视频信息。");
+    private static string BuildSafeError(ProcessResult result, LoginSource loginSource)
+    {
+        string message = YtDlpErrorMessageBuilder.Build(result, "无法读取视频信息。");
+        return UseSelectedBrowserName(message, loginSource);
+    }
+
+    private static string UseSelectedBrowserName(string message, LoginSource loginSource)
+    {
+        if (loginSource is not LoginSource.Browser browser
+            || !message.StartsWith("无法读取 ", StringComparison.Ordinal))
+        {
+            return message;
+        }
+
+        string selectedBrowser = browser.Type == BrowserType.Edge ? "Edge" : "Chrome";
+        return message
+            .Replace("Chrome", selectedBrowser, StringComparison.Ordinal)
+            .Replace("Edge", selectedBrowser, StringComparison.Ordinal);
+    }
 }
