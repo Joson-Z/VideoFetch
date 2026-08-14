@@ -24,9 +24,13 @@ public sealed class MainViewModel : ObservableObject
     private QualityOption? selectedQuality;
     private OutputModeOption selectedOutputMode;
     private string videoTitle = "尚未解析视频";
-    private string videoDetails = "输入 B 站视频链接后检测登录状态并读取可用画质。";
+    private string videoDetails = "输入 B 站视频链接，检测后显示标题、作者、时长和可用画质。";
     private string toolStatus = "尚未检测 yt-dlp 和 FFmpeg";
-    private string loginStatus = "尚未检测";
+    private string loginStatus = "尚未检测登录信息";
+    private string videoStatus = "尚未检测视频链接";
+    private CheckState toolCheckState = CheckState.Pending;
+    private CheckState loginCheckState = CheckState.Pending;
+    private CheckState videoCheckState = CheckState.Pending;
     private string statusMessage = "准备就绪";
     private string progressDetail = string.Empty;
     private double progressPercent;
@@ -66,6 +70,7 @@ public sealed class MainViewModel : ObservableObject
         selectedQuality = QualityOptions[0];
 
         CheckToolsCommand = new AsyncRelayCommand(CheckToolsAsync, () => !IsBusy, HandleUnexpectedError);
+        CheckLoginCommand = new AsyncRelayCommand(CheckLoginAsync, CanCheckLogin, HandleUnexpectedError);
         ProbeCommand = new AsyncRelayCommand(ProbeAsync, CanProbe, HandleUnexpectedError);
         DownloadCommand = new AsyncRelayCommand(DownloadAsync, CanDownload, HandleUnexpectedError);
         CancelCommand = new RelayCommand(Cancel, () => IsBusy);
@@ -81,6 +86,8 @@ public sealed class MainViewModel : ObservableObject
     public ObservableCollection<QualityOption> QualityOptions { get; } = [];
 
     public AsyncRelayCommand CheckToolsCommand { get; }
+
+    public AsyncRelayCommand CheckLoginCommand { get; }
 
     public AsyncRelayCommand ProbeCommand { get; }
 
@@ -104,7 +111,11 @@ public sealed class MainViewModel : ObservableObject
                 metadata = null;
                 CompletedFilePath = null;
                 VideoTitle = "尚未解析视频";
-                VideoDetails = "链接已变化，请重新解析。";
+                VideoDetails = "链接已变化，请重新检测视频。";
+                VideoStatus = "链接已变化，请重新检测";
+                VideoCheckState = CheckState.Pending;
+                LoginStatus = "视频链接已变化，请重新检测登录信息";
+                LoginCheckState = CheckState.Pending;
                 RefreshCommandStates();
             }
         }
@@ -117,7 +128,10 @@ public sealed class MainViewModel : ObservableObject
         {
             if (SetProperty(ref selectedLoginMethod, value))
             {
-                LoginStatus = "登录来源已变化，请重新解析";
+                LoginStatus = "登录来源已变化，请重新检测";
+                LoginCheckState = CheckState.Pending;
+                VideoStatus = "登录来源已变化，请重新检测视频";
+                VideoCheckState = CheckState.Pending;
                 metadata = null;
                 OnPropertyChanged(nameof(IsBrowserLogin));
                 OnPropertyChanged(nameof(IsCookieFileLogin));
@@ -133,13 +147,25 @@ public sealed class MainViewModel : ObservableObject
     public string BrowserProfile
     {
         get => browserProfile;
-        set => SetProperty(ref browserProfile, value);
+        set
+        {
+            if (SetProperty(ref browserProfile, value))
+            {
+                InvalidateLoginCheck("浏览器配置已变化，请重新检测");
+            }
+        }
     }
 
     public string CookieFilePath
     {
         get => cookieFilePath;
-        set => SetProperty(ref cookieFilePath, value);
+        set
+        {
+            if (SetProperty(ref cookieFilePath, value))
+            {
+                InvalidateLoginCheck("Cookie 文件已变化，请重新检测");
+            }
+        }
     }
 
     public string ToolDirectory
@@ -150,6 +176,8 @@ public sealed class MainViewModel : ObservableObject
             if (SetProperty(ref toolDirectory, value))
             {
                 ToolStatus = "工具目录已变化，请重新检测";
+                ToolCheckState = CheckState.Pending;
+                InvalidateLoginCheck("工具目录已变化，请重新检测登录信息");
             }
         }
     }
@@ -194,6 +222,30 @@ public sealed class MainViewModel : ObservableObject
     {
         get => loginStatus;
         private set => SetProperty(ref loginStatus, value);
+    }
+
+    public string VideoStatus
+    {
+        get => videoStatus;
+        private set => SetProperty(ref videoStatus, value);
+    }
+
+    public CheckState ToolCheckState
+    {
+        get => toolCheckState;
+        private set => SetProperty(ref toolCheckState, value);
+    }
+
+    public CheckState LoginCheckState
+    {
+        get => loginCheckState;
+        private set => SetProperty(ref loginCheckState, value);
+    }
+
+    public CheckState VideoCheckState
+    {
+        get => videoCheckState;
+        private set => SetProperty(ref videoCheckState, value);
     }
 
     public string StatusMessage
@@ -242,17 +294,66 @@ public sealed class MainViewModel : ObservableObject
         await RunBusyAsync(async () =>
         {
             StatusMessage = "正在检测工具链…";
-            ClientServices services = serviceFactory.Create(ToolDirectory);
-            ToolchainReport report = await services.ToolchainService.CheckAsync(
-                services.ToolchainConfiguration,
-                cancellationToken);
-            ToolStatus = string.Join("  ·  ", report.Components.Select(component =>
-                component.IsAvailable
-                    ? $"{component.ExecutableName}: {ShortenVersion(component.Version)}"
-                    : $"{component.ExecutableName}: 缺失"));
-            StatusMessage = report.IsReady
-                ? "工具链检测通过"
-                : "工具不完整：请将 yt-dlp.exe、ffmpeg.exe、ffprobe.exe 放入工具目录";
+            ToolStatus = "正在检查 yt-dlp、FFmpeg 和 FFprobe…";
+            ToolCheckState = CheckState.Checking;
+            try
+            {
+                ClientServices services = serviceFactory.Create(ToolDirectory);
+                ToolchainReport report = await services.ToolchainService.CheckAsync(
+                    services.ToolchainConfiguration,
+                    cancellationToken);
+                ToolStatus = string.Join("  ·  ", report.Components.Select(component =>
+                    component.IsAvailable
+                        ? $"{component.ExecutableName}: {ShortenVersion(component.Version)}"
+                        : $"{component.ExecutableName}: 缺失"));
+                ToolCheckState = report.IsReady ? CheckState.Success : CheckState.Error;
+                StatusMessage = report.IsReady
+                    ? "工具链检测通过"
+                    : "工具不完整：请将 yt-dlp.exe、ffmpeg.exe、ffprobe.exe 放入工具目录";
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                ToolCheckState = CheckState.Error;
+                ToolStatus = $"检测失败：{exception.Message}";
+                throw;
+            }
+        });
+    }
+
+    private async Task CheckLoginAsync(CancellationToken cancellationToken)
+    {
+        await RunBusyAsync(async () =>
+        {
+            LoginCheckState = CheckState.Checking;
+            LoginStatus = "正在读取登录来源并验证 B 站访问…";
+            StatusMessage = "正在检测登录信息…";
+            try
+            {
+                ClientServices services = serviceFactory.Create(ToolDirectory);
+                await EnsureToolchainReadyAsync(services, cancellationToken);
+                LoginSource loginSource = BuildLoginSource();
+                if (loginSource is LoginSource.Anonymous)
+                {
+                    LoginCheckState = CheckState.Warning;
+                    LoginStatus = "当前选择匿名模式：未读取登录信息，只能检测公开可用画质。";
+                    StatusMessage = "匿名模式已确认";
+                    return;
+                }
+
+                await services.VideoProbeService.ProbeAsync(
+                    VideoUrl.Trim(),
+                    loginSource,
+                    cancellationToken);
+                LoginCheckState = CheckState.Success;
+                LoginStatus = BuildLoginSuccessMessage();
+                StatusMessage = "登录信息读取成功";
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                LoginCheckState = CheckState.Error;
+                LoginStatus = $"登录检测失败：{exception.Message}";
+                throw;
+            }
         });
     }
 
@@ -260,34 +361,40 @@ public sealed class MainViewModel : ObservableObject
     {
         await RunBusyAsync(async () =>
         {
-            StatusMessage = "正在检测登录状态并解析视频…";
+            StatusMessage = "正在检测视频并读取可用画质…";
+            VideoStatus = "正在连接 B 站并读取视频信息…";
+            VideoCheckState = CheckState.Checking;
             ProgressPercent = 0;
-            ClientServices services = serviceFactory.Create(ToolDirectory);
-            ToolchainReport report = await services.ToolchainService.CheckAsync(
-                services.ToolchainConfiguration,
-                cancellationToken);
-            if (!report.IsReady)
+            try
             {
-                throw new InvalidOperationException("工具链不完整，请先配置并检测工具目录。");
+                ClientServices services = serviceFactory.Create(ToolDirectory);
+                await EnsureToolchainReadyAsync(services, cancellationToken);
+                LoginSource loginSource = BuildLoginSource();
+                VideoMetadata result = await services.VideoProbeService.ProbeAsync(
+                    VideoUrl.Trim(),
+                    loginSource,
+                    cancellationToken);
+                metadata = result;
+                VideoTitle = result.Title;
+                VideoDetails = BuildVideoDetails(result);
+                VideoStatus = $"检测成功：已读取 {result.Formats.Count} 个媒体格式";
+                VideoCheckState = CheckState.Success;
+                LoginCheckState = loginSource is LoginSource.Anonymous
+                    ? CheckState.Warning
+                    : CheckState.Success;
+                LoginStatus = loginSource is LoginSource.Anonymous
+                    ? "当前为匿名模式：未读取登录信息，画质列表仅包含公开格式。"
+                    : BuildLoginSuccessMessage();
+                PopulateQualityOptions(result.Formats);
+                StatusMessage = $"视频检测完成：发现 {result.Formats.Count} 个媒体格式";
             }
-
-            LoginSource loginSource = BuildLoginSource();
-            VideoMetadata result = await services.VideoProbeService.ProbeAsync(
-                VideoUrl.Trim(),
-                loginSource,
-                cancellationToken);
-            metadata = result;
-            VideoTitle = result.Title;
-            VideoDetails = BuildVideoDetails(result);
-            LoginStatus = SelectedLoginMethod.Value switch
+            catch (Exception exception) when (exception is not OperationCanceledException)
             {
-                LoginMethod.Edge => "已使用 Edge 登录态读取可用格式",
-                LoginMethod.Chrome => "已使用 Chrome 登录态读取可用格式",
-                LoginMethod.CookieFile => "已使用 Cookie 文件读取可用格式",
-                _ => "未登录；当前显示公开可用格式",
-            };
-            PopulateQualityOptions(result.Formats);
-            StatusMessage = $"解析完成：发现 {result.Formats.Count} 个媒体格式";
+                metadata = null;
+                VideoCheckState = CheckState.Error;
+                VideoStatus = $"检测失败：{exception.Message}";
+                throw;
+            }
         });
     }
 
@@ -330,6 +437,24 @@ public sealed class MainViewModel : ObservableObject
             ProgressDetail = result.OutputPath;
             StatusMessage = "下载、合并与校验全部完成";
         });
+    }
+
+    private async Task EnsureToolchainReadyAsync(
+        ClientServices services,
+        CancellationToken cancellationToken)
+    {
+        ToolchainReport report = await services.ToolchainService.CheckAsync(
+            services.ToolchainConfiguration,
+            cancellationToken);
+        ToolStatus = string.Join("  ·  ", report.Components.Select(component =>
+            component.IsAvailable
+                ? $"{component.ExecutableName}: {ShortenVersion(component.Version)}"
+                : $"{component.ExecutableName}: 缺失"));
+        ToolCheckState = report.IsReady ? CheckState.Success : CheckState.Error;
+        if (!report.IsReady)
+        {
+            throw new InvalidOperationException("工具链不完整，请先配置并检测工具目录。");
+        }
     }
 
     private async Task RunBusyAsync(Func<Task> operation)
@@ -430,9 +555,12 @@ public sealed class MainViewModel : ObservableObject
     private void Cancel()
     {
         CheckToolsCommand.Cancel();
+        CheckLoginCommand.Cancel();
         ProbeCommand.Cancel();
         DownloadCommand.Cancel();
     }
+
+    private bool CanCheckLogin() => !IsBusy && !string.IsNullOrWhiteSpace(VideoUrl);
 
     private bool CanProbe() => !IsBusy && !string.IsNullOrWhiteSpace(VideoUrl);
 
@@ -441,6 +569,7 @@ public sealed class MainViewModel : ObservableObject
     private void RefreshCommandStates()
     {
         CheckToolsCommand.NotifyCanExecuteChanged();
+        CheckLoginCommand.NotifyCanExecuteChanged();
         ProbeCommand.NotifyCanExecuteChanged();
         DownloadCommand.NotifyCanExecuteChanged();
         CancelCommand.NotifyCanExecuteChanged();
@@ -450,6 +579,24 @@ public sealed class MainViewModel : ObservableObject
     }
 
     private void HandleUnexpectedError(Exception exception) => StatusMessage = exception.Message;
+
+    private void InvalidateLoginCheck(string message)
+    {
+        LoginStatus = message;
+        LoginCheckState = CheckState.Pending;
+        VideoStatus = "登录配置已变化，请重新检测视频";
+        VideoCheckState = CheckState.Pending;
+        metadata = null;
+        RefreshCommandStates();
+    }
+
+    private string BuildLoginSuccessMessage() => SelectedLoginMethod.Value switch
+    {
+        LoginMethod.Edge => $"登录信息读取成功：Edge / {NormalizeOptional(BrowserProfile) ?? "默认配置"}；已完成 B 站访问验证。",
+        LoginMethod.Chrome => $"登录信息读取成功：Chrome / {NormalizeOptional(BrowserProfile) ?? "默认配置"}；已完成 B 站访问验证。",
+        LoginMethod.CookieFile => "登录信息读取成功：cookies.txt 可用；已完成 B 站访问验证。",
+        _ => "当前为匿名模式：未读取登录信息。",
+    };
 
     private static string BuildVideoDetails(VideoMetadata value)
     {

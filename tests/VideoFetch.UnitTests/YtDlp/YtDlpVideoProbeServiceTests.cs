@@ -79,6 +79,23 @@ public sealed class YtDlpVideoProbeServiceTests
         Assert.AreEqual("ERROR: 登录状态已失效", exception.Message);
     }
 
+    [TestMethod]
+    public async Task ProbeAsync_WhenChromeCookieDatabaseIsLocked_ReturnsActionableChineseError()
+    {
+        CapturingProcessRunner runner = new(new ProcessResult(
+            1,
+            string.Empty,
+            "ERROR: Could not copy Chrome cookie database. See https://github.com/yt-dlp/yt-dlp/issues/7271 for more info"));
+        YtDlpVideoProbeService service = CreateService(runner);
+
+        VideoProbeException exception = await Assert.ThrowsExactlyAsync<VideoProbeException>(() =>
+            service.ProbeAsync(VideoUrl, new LoginSource.Browser(BrowserType.Chrome, "Default")));
+
+        StringAssert.Contains(exception.Message, "完全退出 Chrome");
+        StringAssert.Contains(exception.Message, "cookies.txt");
+        Assert.DoesNotContain("github.com", exception.Message);
+    }
+
     private static YtDlpVideoProbeService CreateService(IProcessRunner runner) =>
         new(
             new YtDlpConfiguration(),

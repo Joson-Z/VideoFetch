@@ -27,6 +27,39 @@ public sealed class MainViewModelTests
         Assert.AreEqual("自动：最高可用（2160P）", viewModel.QualityOptions[0].Label);
         Assert.AreEqual(2160, viewModel.QualityOptions[1].MaximumHeight);
         StringAssert.Contains(viewModel.LoginStatus, "Edge");
+        Assert.AreEqual(CheckState.Success, viewModel.VideoCheckState);
+        StringAssert.Contains(viewModel.VideoStatus, "检测成功");
+    }
+
+    [TestMethod]
+    public async Task CheckLoginCommand_ReportsSuccessfulLoginSourceRead()
+    {
+        MainViewModel viewModel = CreateViewModel(new RecordingDownloadService());
+        viewModel.VideoUrl = "https://www.bilibili.com/video/BV1TEST";
+
+        await ExecuteAsync(viewModel.CheckLoginCommand);
+
+        Assert.AreEqual(CheckState.Success, viewModel.LoginCheckState);
+        StringAssert.Contains(viewModel.LoginStatus, "登录信息读取成功");
+        StringAssert.Contains(viewModel.LoginStatus, "Edge");
+        Assert.AreEqual("尚未解析视频", viewModel.VideoTitle);
+    }
+
+    [TestMethod]
+    public async Task CheckLoginCommand_WhenProbeFails_ReportsLoginFailureSeparately()
+    {
+        MainViewModel viewModel = CreateViewModel(
+            new RecordingDownloadService(),
+            new FailingProbeService("无法读取 Chrome 登录信息：请完全退出 Chrome 后重试。"));
+        viewModel.SelectedLoginMethod = viewModel.LoginMethods.Single(option => option.Value == LoginMethod.Chrome);
+        viewModel.VideoUrl = "https://www.bilibili.com/video/BV1TEST";
+
+        await ExecuteAsync(viewModel.CheckLoginCommand);
+
+        Assert.AreEqual(CheckState.Error, viewModel.LoginCheckState);
+        StringAssert.Contains(viewModel.LoginStatus, "登录检测失败");
+        StringAssert.Contains(viewModel.LoginStatus, "完全退出 Chrome");
+        Assert.AreEqual(CheckState.Pending, viewModel.VideoCheckState);
     }
 
     [TestMethod]
@@ -50,7 +83,9 @@ public sealed class MainViewModelTests
         Assert.AreEqual(100, viewModel.ProgressPercent);
     }
 
-    private static MainViewModel CreateViewModel(RecordingDownloadService downloadService)
+    private static MainViewModel CreateViewModel(
+        RecordingDownloadService downloadService,
+        IVideoProbeService? probeService = null)
     {
         VideoMetadata metadata = new()
         {
@@ -69,7 +104,7 @@ public sealed class MainViewModelTests
         ClientServices services = new(
             new ReadyToolchainService(),
             new ToolchainConfiguration(),
-            new StaticProbeService(metadata),
+            probeService ?? new StaticProbeService(metadata),
             new FormatSelectionService(),
             downloadService);
         return new MainViewModel(new StaticClientServiceFactory(services), new NullFileDialogService());
@@ -143,6 +178,15 @@ public sealed class MainViewModelTests
             string url,
             LoginSource loginSource,
             CancellationToken cancellationToken = default) => Task.FromResult(metadata);
+    }
+
+    private sealed class FailingProbeService(string message) : IVideoProbeService
+    {
+        public Task<VideoMetadata> ProbeAsync(
+            string url,
+            LoginSource loginSource,
+            CancellationToken cancellationToken = default) =>
+            Task.FromException<VideoMetadata>(new VideoProbeException(message));
     }
 
     private sealed class RecordingDownloadService : IDownloadService

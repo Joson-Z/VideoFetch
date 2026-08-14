@@ -167,12 +167,5 @@ public sealed class YtDlpDownloadService(
     }
 
     private static string BuildSafeError(ProcessResult result)
-    {
-        string line = result.StandardError
-            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-            .Select(value => value.Trim())
-            .FirstOrDefault(value => value.Length > 0)
-            ?? $"下载进程退出码：{result.ExitCode}";
-        return line.Length <= 500 ? line : line[..500];
-    }
+        => YtDlpErrorMessageBuilder.Build(result, $"下载进程退出码：{result.ExitCode}");
 }

@@ -3,12 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:VideoFetch.App.ViewModels"
         mc:Ignorable="d"
         Title="VideoFetch - B站最高画质下载"
-        Width="1120"
-        Height="820"
-        MinWidth="920"
-        MinHeight="680"
+        Width="1180"
+        Height="860"
+        MinWidth="980"
+        MinHeight="720"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource PageBackgroundBrush}">
     <Grid>
@@ -18,249 +19,399 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="#17233C" Padding="28,20">
+        <Border Grid.Row="0" Padding="30,20">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#111C35" Offset="0" />
+                    <GradientStop Color="#1E3A6D" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <TextBlock Text="VideoFetch" FontSize="28" FontWeight="SemiBold" Foreground="White" />
-                    <TextBlock Margin="0,5,0,0"
-                               Text="登录态可用最高画质 · 最高音质 · 自动合并 MP4"
-                               FontSize="14"
-                               Foreground="#B9C8E5" />
+                <StackPanel Orientation="Horizontal">
+                    <Border Width="46" Height="46" Background="#2563EB" CornerRadius="12">
+                        <TextBlock Text="VF"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="White"
+                                   FontSize="16"
+                                   FontWeight="Bold" />
+                    </Border>
+                    <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="VideoFetch" FontSize="25" FontWeight="SemiBold" Foreground="White" />
+                        <TextBlock Margin="0,3,0,0"
+                                   Text="登录态最高画质 · 最高音质 · 自动合并 MP4"
+                                   FontSize="13"
+                                   Foreground="#C7D5ED" />
+                    </StackPanel>
                 </StackPanel>
                 <Border Grid.Column="1"
-                        Padding="12,7"
-                        Background="#253653"
-                        CornerRadius="16"
+                        Padding="13,7"
+                        Background="#263E68"
+                        CornerRadius="18"
                         VerticalAlignment="Center">
-                    <TextBlock Text="本地处理，不上传 Cookie" Foreground="#DCE7FA" FontSize="12" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="●" Foreground="#4ADE80" FontSize="11" VerticalAlignment="Center" />
+                        <TextBlock Margin="7,0,0,0"
+                                   Text="全部在本机处理，不上传 Cookie"
+                                   Foreground="#E3ECFA"
+                                   FontSize="12" />
+                    </StackPanel>
                 </Border>
             </Grid>
         </Border>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-            <Grid Margin="26,22,26,10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.05*" />
-                    <ColumnDefinition Width="18" />
-                    <ColumnDefinition Width="0.95*" />
-                </Grid.ColumnDefinitions>
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="30,22,30,12" MaxWidth="1180">
+                <Border Margin="0,0,0,16"
+                        Padding="20,14"
+                        Background="White"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="34" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="34" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <Border Style="{StaticResource StepNumberStyle}">
+                                <TextBlock Text="1" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#1D4ED8" FontWeight="Bold" />
+                            </Border>
+                            <StackPanel Margin="10,0,0,0">
+                                <TextBlock Text="检查环境与登录" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="工具和 Cookie 可用" Style="{StaticResource HelperTextStyle}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="→" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#94A3B8" FontSize="18" />
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <Border Style="{StaticResource StepNumberStyle}">
+                                <TextBlock Text="2" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#1D4ED8" FontWeight="Bold" />
+                            </Border>
+                            <StackPanel Margin="10,0,0,0">
+                                <TextBlock Text="检测视频与画质" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="确认链接和媒体格式" Style="{StaticResource HelperTextStyle}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <TextBlock Grid.Column="3" Text="→" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#94A3B8" FontSize="18" />
+                        <StackPanel Grid.Column="4" Orientation="Horizontal">
+                            <Border Style="{StaticResource StepNumberStyle}">
+                                <TextBlock Text="3" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#1D4ED8" FontWeight="Bold" />
+                            </Border>
+                            <StackPanel Margin="10,0,0,0">
+                                <TextBlock Text="保存并下载" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Text="下载、合并和校验" Style="{StaticResource HelperTextStyle}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
-                <StackPanel Grid.Column="0">
-                    <Border Style="{StaticResource CardStyle}">
-                        <StackPanel>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="1. 工具与登录状态" Style="{StaticResource SectionTitleStyle}" />
-                                <Button Grid.Column="1"
-                                        Margin="10,0,0,10"
-                                        Command="{Binding CheckToolsCommand}"
-                                        Content="检测工具"
-                                        Style="{StaticResource SecondaryButtonStyle}" />
-                            </Grid>
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource StepNumberStyle}">
+                                <TextBlock Text="1" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#1D4ED8" FontWeight="Bold" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,-1,0,0">
+                                <TextBlock Text="环境与登录" Style="{StaticResource SectionTitleStyle}" Margin="0" />
+                                <TextBlock Margin="0,4,0,0" Text="先确认本地工具可运行，再验证所选登录来源。" Style="{StaticResource HelperTextStyle}" />
+                            </StackPanel>
+                        </Grid>
 
-                            <TextBlock Text="工具目录" Style="{StaticResource FieldLabelStyle}" />
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBox Text="{Binding ToolDirectory, UpdateSourceTrigger=PropertyChanged}" />
-                                <Button Grid.Column="1"
-                                        Margin="8,0,0,0"
-                                        Command="{Binding SelectToolDirectoryCommand}"
-                                        Content="浏览…"
-                                        Style="{StaticResource SecondaryButtonStyle}" />
-                            </Grid>
-                            <TextBlock Margin="0,7,0,14"
-                                       Text="{Binding ToolStatus}"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       TextWrapping="Wrap" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
 
-                            <TextBlock Text="登录来源" Style="{StaticResource FieldLabelStyle}" />
-                            <ComboBox ItemsSource="{Binding LoginMethods}"
-                                      SelectedItem="{Binding SelectedLoginMethod}"
-                                      DisplayMemberPath="Label" />
+                            <StackPanel Grid.Column="0">
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="本地工具" Style="{StaticResource SubsectionTitleStyle}" />
+                                        <TextBlock Margin="0,3,0,0" Text="yt-dlp、FFmpeg、FFprobe" Style="{StaticResource HelperTextStyle}" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Command="{Binding CheckToolsCommand}" Content="检测工具" Style="{StaticResource SecondaryButtonStyle}" />
+                                </Grid>
 
-                            <Border Margin="0,12,0,0">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsBrowserLogin}" Value="True">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
+                                <TextBlock Text="工具目录" Style="{StaticResource FieldLabelStyle}" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Text="{Binding ToolDirectory, UpdateSourceTrigger=PropertyChanged}" />
+                                    <Button Grid.Column="1" Margin="8,0,0,0" Command="{Binding SelectToolDirectoryCommand}" Content="浏览…" Style="{StaticResource SecondaryButtonStyle}" />
+                                </Grid>
+
+                                <Border Margin="0,12,0,0">
+                                    <Border.Style>
+                                        <Style TargetType="Border" BasedOn="{StaticResource StatusPanelStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ToolCheckState}" Value="{x:Static viewModels:CheckState.Checking}">
+                                                    <Setter Property="Background" Value="#EFF6FF" />
+                                                    <Setter Property="BorderBrush" Value="#BFDBFE" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ToolCheckState}" Value="{x:Static viewModels:CheckState.Success}">
+                                                    <Setter Property="Background" Value="#F0FDF4" />
+                                                    <Setter Property="BorderBrush" Value="#BBF7D0" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ToolCheckState}" Value="{x:Static viewModels:CheckState.Error}">
+                                                    <Setter Property="Background" Value="#FFF1F2" />
+                                                    <Setter Property="BorderBrush" Value="#FECDD3" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+                                        <TextBlock Text="工具检测结果" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                        <TextBlock Margin="0,5,0,0" Text="{Binding ToolStatus}" Style="{StaticResource HelperTextStyle}" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+
+                            <Border Grid.Column="1" Width="1" Background="{StaticResource BorderBrush}" HorizontalAlignment="Center" />
+
+                            <StackPanel Grid.Column="2">
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="登录信息" Style="{StaticResource SubsectionTitleStyle}" />
+                                        <TextBlock Margin="0,3,0,0" Text="检测需要先填写第 2 步的视频链接" Style="{StaticResource HelperTextStyle}" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Command="{Binding CheckLoginCommand}" Content="检测登录" Style="{StaticResource SecondaryButtonStyle}" />
+                                </Grid>
+
+                                <TextBlock Text="登录来源" Style="{StaticResource FieldLabelStyle}" />
+                                <ComboBox ItemsSource="{Binding LoginMethods}" SelectedItem="{Binding SelectedLoginMethod}" DisplayMemberPath="Label" />
+
+                                <Border Margin="0,10,0,0">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsBrowserLogin}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+                                        <TextBlock Text="浏览器配置文件（Default、Profile 1 等）" Style="{StaticResource FieldLabelStyle}" />
+                                        <TextBox Text="{Binding BrowserProfile, UpdateSourceTrigger=PropertyChanged}" />
+                                        <TextBlock Margin="0,5,0,0" Text="如提示 Cookie 数据库被占用，请完全退出对应浏览器后重试。" Style="{StaticResource HelperTextStyle}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Margin="0,10,0,0">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsCookieFileLogin}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+                                        <TextBlock Text="Cookie 文件" Style="{StaticResource FieldLabelStyle}" />
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox Text="{Binding CookieFilePath, UpdateSourceTrigger=PropertyChanged}" />
+                                            <Button Grid.Column="1" Margin="8,0,0,0" Command="{Binding SelectCookieFileCommand}" Content="选择…" Style="{StaticResource SecondaryButtonStyle}" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Margin="0,12,0,0">
+                                    <Border.Style>
+                                        <Style TargetType="Border" BasedOn="{StaticResource StatusPanelStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding LoginCheckState}" Value="{x:Static viewModels:CheckState.Checking}">
+                                                    <Setter Property="Background" Value="#EFF6FF" />
+                                                    <Setter Property="BorderBrush" Value="#BFDBFE" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding LoginCheckState}" Value="{x:Static viewModels:CheckState.Success}">
+                                                    <Setter Property="Background" Value="#F0FDF4" />
+                                                    <Setter Property="BorderBrush" Value="#BBF7D0" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding LoginCheckState}" Value="{x:Static viewModels:CheckState.Warning}">
+                                                    <Setter Property="Background" Value="#FFFBEB" />
+                                                    <Setter Property="BorderBrush" Value="#FDE68A" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding LoginCheckState}" Value="{x:Static viewModels:CheckState.Error}">
+                                                    <Setter Property="Background" Value="#FFF1F2" />
+                                                    <Setter Property="BorderBrush" Value="#FECDD3" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+                                        <TextBlock Text="登录检测结果" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                        <TextBlock Margin="0,5,0,0" Text="{Binding LoginStatus}" Style="{StaticResource HelperTextStyle}" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource StepNumberStyle}">
+                                <TextBlock Text="2" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#1D4ED8" FontWeight="Bold" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="12,-1,0,0">
+                                <TextBlock Text="检测视频与画质" Style="{StaticResource SectionTitleStyle}" Margin="0" />
+                                <TextBlock Margin="0,4,0,0" Text="确认链接能否读取，并返回标题、视频信息和可选择画质。" Style="{StaticResource HelperTextStyle}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Text="B 站视频链接" Style="{StaticResource FieldLabelStyle}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding VideoUrl, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button Grid.Column="1" Margin="10,0,0,0" MinWidth="150" Command="{Binding ProbeCommand}" Content="检测视频与画质" Style="{StaticResource PrimaryButtonStyle}" />
+                        </Grid>
+
+                        <Border Margin="0,12,0,0">
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource StatusPanelStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding VideoCheckState}" Value="{x:Static viewModels:CheckState.Checking}">
+                                            <Setter Property="Background" Value="#EFF6FF" />
+                                            <Setter Property="BorderBrush" Value="#BFDBFE" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding VideoCheckState}" Value="{x:Static viewModels:CheckState.Success}">
+                                            <Setter Property="Background" Value="#F0FDF4" />
+                                            <Setter Property="BorderBrush" Value="#BBF7D0" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding VideoCheckState}" Value="{x:Static viewModels:CheckState.Error}">
+                                            <Setter Property="Background" Value="#FFF1F2" />
+                                            <Setter Property="BorderBrush" Value="#FECDD3" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel>
+                                <TextBlock Text="视频检测结果" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Margin="0,5,0,0" Text="{Binding VideoStatus}" Style="{StaticResource HelperTextStyle}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Grid Margin="0,16,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.15*" />
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="0.85*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" Padding="16" Background="#F8FAFC" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10">
                                 <StackPanel>
-                                    <TextBlock Text="浏览器配置文件（常用值：Default、Profile 1）"
-                                               Style="{StaticResource FieldLabelStyle}" />
-                                    <TextBox Text="{Binding BrowserProfile, UpdateSourceTrigger=PropertyChanged}" />
+                                    <TextBlock Text="{Binding VideoTitle}" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" />
+                                    <TextBlock Margin="0,7,0,0" Text="{Binding VideoDetails}" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Border>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="下载画质" Style="{StaticResource FieldLabelStyle}" />
+                                <ComboBox ItemsSource="{Binding QualityOptions}" SelectedItem="{Binding SelectedQuality}" DisplayMemberPath="Label" />
+                                <TextBlock Margin="0,12,0,6" Text="MP4 输出模式" Style="{StaticResource FieldLabelStyle}" />
+                                <ComboBox ItemsSource="{Binding OutputModes}" SelectedItem="{Binding SelectedOutputMode}" DisplayMemberPath="Label" />
+                                <TextBlock Margin="0,6,0,0" Text="{Binding SelectedOutputMode.Description}" Style="{StaticResource HelperTextStyle}" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
 
-                            <Border Margin="0,12,0,0">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsCookieFileLogin}" Value="True">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-                                <StackPanel>
-                                    <TextBlock Text="Cookie 文件" Style="{StaticResource FieldLabelStyle}" />
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBox Text="{Binding CookieFilePath, UpdateSourceTrigger=PropertyChanged}" />
-                                        <Button Grid.Column="1"
-                                                Margin="8,0,0,0"
-                                                Command="{Binding SelectCookieFileCommand}"
-                                                Content="选择…"
-                                                Style="{StaticResource SecondaryButtonStyle}" />
-                                    </Grid>
-                                </StackPanel>
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource StepNumberStyle}">
+                                <TextBlock Text="3" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#1D4ED8" FontWeight="Bold" />
                             </Border>
+                            <StackPanel Grid.Column="1" Margin="12,-1,0,0">
+                                <TextBlock Text="保存并下载" Style="{StaticResource SectionTitleStyle}" Margin="0" />
+                                <TextBlock Margin="0,4,0,0" Text="下载所选视频和最高音质，自动合并、转封装并校验 MP4。" Style="{StaticResource HelperTextStyle}" />
+                            </StackPanel>
+                        </Grid>
 
-                            <Border Margin="0,14,0,0" Padding="11" Background="#F3F7FF" CornerRadius="7">
-                                <TextBlock Text="{Binding LoginStatus}" Foreground="#315FAF" TextWrapping="Wrap" />
-                            </Border>
-                        </StackPanel>
-                    </Border>
+                        <TextBlock Text="保存目录" Style="{StaticResource FieldLabelStyle}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding OutputDirectory, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button Grid.Column="1" Margin="8,0,0,0" Command="{Binding SelectOutputDirectoryCommand}" Content="浏览…" Style="{StaticResource SecondaryButtonStyle}" />
+                        </Grid>
 
-                    <Border Style="{StaticResource CardStyle}">
-                        <StackPanel>
-                            <TextBlock Text="2. 视频链接" Style="{StaticResource SectionTitleStyle}" />
-                            <TextBlock Text="B 站视频地址" Style="{StaticResource FieldLabelStyle}" />
-                            <TextBox MinHeight="74"
-                                     AcceptsReturn="True"
-                                     TextWrapping="Wrap"
-                                     VerticalContentAlignment="Top"
-                                     Text="{Binding VideoUrl, UpdateSourceTrigger=PropertyChanged}" />
-                            <Button Margin="0,12,0,0"
-                                    Command="{Binding ProbeCommand}"
-                                    Content="检测登录并解析画质"
-                                    Style="{StaticResource PrimaryButtonStyle}" />
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
+                        <ProgressBar Margin="0,18,0,0" Height="10" Minimum="0" Maximum="100" Value="{Binding ProgressPercent, Mode=OneWay}" Foreground="{StaticResource PrimaryBrush}" />
+                        <TextBlock Margin="0,7,0,0" Text="{Binding ProgressDetail}" Style="{StaticResource HelperTextStyle}" />
 
-                <StackPanel Grid.Column="2">
-                    <Border Style="{StaticResource CardStyle}">
-                        <StackPanel>
-                            <TextBlock Text="3. 视频与质量" Style="{StaticResource SectionTitleStyle}" />
-                            <Border Padding="14" Background="#F7F9FC" CornerRadius="8">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding VideoTitle}"
-                                               FontSize="18"
-                                               FontWeight="SemiBold"
-                                               Foreground="{StaticResource TextPrimaryBrush}"
-                                               TextWrapping="Wrap" />
-                                    <TextBlock Margin="0,7,0,0"
-                                               Text="{Binding VideoDetails}"
-                                               Foreground="{StaticResource TextSecondaryBrush}"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                            </Border>
+                        <Grid Margin="0,16,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button Command="{Binding DownloadCommand}" Content="下载最高音质并合并 MP4" Style="{StaticResource PrimaryButtonStyle}" />
+                            <Button Grid.Column="2" Command="{Binding CancelCommand}" Content="取消任务" Style="{StaticResource SecondaryButtonStyle}" />
+                        </Grid>
 
-                            <TextBlock Margin="0,16,0,6" Text="画质" Style="{StaticResource FieldLabelStyle}" />
-                            <ComboBox ItemsSource="{Binding QualityOptions}"
-                                      SelectedItem="{Binding SelectedQuality}"
-                                      DisplayMemberPath="Label" />
-
-                            <TextBlock Margin="0,14,0,6" Text="MP4 输出模式" Style="{StaticResource FieldLabelStyle}" />
-                            <ComboBox ItemsSource="{Binding OutputModes}"
-                                      SelectedItem="{Binding SelectedOutputMode}"
-                                      DisplayMemberPath="Label" />
-                            <TextBlock Margin="0,7,0,0"
-                                       Text="{Binding SelectedOutputMode.Description}"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Border>
-
-                    <Border Style="{StaticResource CardStyle}">
-                        <StackPanel>
-                            <TextBlock Text="4. 保存与下载" Style="{StaticResource SectionTitleStyle}" />
-                            <TextBlock Text="保存目录" Style="{StaticResource FieldLabelStyle}" />
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBox Text="{Binding OutputDirectory, UpdateSourceTrigger=PropertyChanged}" />
-                                <Button Grid.Column="1"
-                                        Margin="8,0,0,0"
-                                        Command="{Binding SelectOutputDirectoryCommand}"
-                                        Content="浏览…"
-                                        Style="{StaticResource SecondaryButtonStyle}" />
-                            </Grid>
-
-                            <ProgressBar Margin="0,18,0,0"
-                                         Height="12"
-                                         Minimum="0"
-                                         Maximum="100"
-                                         Value="{Binding ProgressPercent, Mode=OneWay}"
-                                         Foreground="{StaticResource PrimaryBrush}" />
-                            <TextBlock Margin="0,8,0,0"
-                                       Text="{Binding ProgressDetail}"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       TextWrapping="Wrap" />
-
-                            <Grid Margin="0,16,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="10" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <Button Command="{Binding DownloadCommand}"
-                                        Content="下载最高音质并合并 MP4"
-                                        Style="{StaticResource PrimaryButtonStyle}" />
-                                <Button Grid.Column="2"
-                                        Command="{Binding CancelCommand}"
-                                        Content="取消"
-                                        Style="{StaticResource SecondaryButtonStyle}" />
-                            </Grid>
-
-                            <Border Margin="0,15,0,0" Padding="12" Background="#F3F7FF" CornerRadius="7">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding StatusMessage}"
-                                               Foreground="#315FAF"
-                                               FontWeight="Medium"
-                                               TextWrapping="Wrap" />
-                                    <TextBlock Margin="0,5,0,0"
-                                               Text="{Binding CompletedFilePath}"
-                                               Foreground="{StaticResource TextSecondaryBrush}"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Grid>
+                        <Border Margin="0,14,0,0" Style="{StaticResource StatusPanelStyle}" Background="#EFF6FF" BorderBrush="#BFDBFE">
+                            <StackPanel>
+                                <TextBlock Text="任务状态" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                <TextBlock Margin="0,5,0,0" Text="{Binding StatusMessage}" Foreground="#1D4ED8" FontWeight="Medium" TextWrapping="Wrap" />
+                                <TextBlock Margin="0,5,0,0" Text="{Binding CompletedFilePath}" Style="{StaticResource HelperTextStyle}" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
         </ScrollViewer>
 
-        <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="26,10">
+        <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="30,10">
             <Grid>
-                <TextBlock Text="仅下载你拥有版权、已获授权或平台允许保存的内容。"
-                           Foreground="{StaticResource TextSecondaryBrush}"
-                           FontSize="12" />
-                <TextBlock HorizontalAlignment="Right"
-                           Text="不绕过 DRM、会员权限、区域限制或平台风控"
-                           Foreground="{StaticResource TextSecondaryBrush}"
-                           FontSize="12" />
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="仅下载你拥有版权、已获授权或平台允许保存的内容。" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                <TextBlock Grid.Column="1" HorizontalAlignment="Right" Text="不绕过 DRM、会员权限、区域限制或平台风控" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
             </Grid>
         </Border>
     </Grid>

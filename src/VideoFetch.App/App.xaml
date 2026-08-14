@@ -2,17 +2,17 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.Resources>
-        <SolidColorBrush x:Key="PageBackgroundBrush" Color="#F3F6FB" />
+        <SolidColorBrush x:Key="PageBackgroundBrush" Color="#F5F7FB" />
         <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="PrimaryBrush" Color="#2764E7" />
-        <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#1F54C7" />
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#172033" />
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#677187" />
-        <SolidColorBrush x:Key="BorderBrush" Color="#DCE2EC" />
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#2563EB" />
+        <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#1D4ED8" />
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="#15213A" />
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#64748B" />
+        <SolidColorBrush x:Key="BorderBrush" Color="#E2E8F0" />
 
         <Style TargetType="TextBox">
-            <Setter Property="MinHeight" Value="38" />
-            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="MinHeight" Value="42" />
+            <Setter Property="Padding" Value="12,8" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
@@ -22,8 +22,8 @@
         </Style>
 
         <Style TargetType="ComboBox">
-            <Setter Property="MinHeight" Value="38" />
-            <Setter Property="Padding" Value="8,5" />
+            <Setter Property="MinHeight" Value="42" />
+            <Setter Property="Padding" Value="10,6" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
             <Setter Property="Background" Value="White" />
@@ -31,8 +31,8 @@
         </Style>
 
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-            <Setter Property="MinHeight" Value="40" />
-            <Setter Property="Padding" Value="18,8" />
+            <Setter Property="MinHeight" Value="42" />
+            <Setter Property="Padding" Value="20,9" />
             <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="BorderThickness" Value="0" />
@@ -45,7 +45,7 @@
                         <Border x:Name="ButtonBorder"
                                 Padding="{TemplateBinding Padding}"
                                 Background="{TemplateBinding Background}"
-                                CornerRadius="7">
+                                CornerRadius="9">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -62,8 +62,8 @@
         </Style>
 
         <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-            <Setter Property="Background" Value="#EAF0FD" />
-            <Setter Property="Foreground" Value="#2558BD" />
+            <Setter Property="Background" Value="#EAF1FF" />
+            <Setter Property="Foreground" Value="#1D4ED8" />
             <Setter Property="FontWeight" Value="Medium" />
         </Style>
 
@@ -71,13 +71,13 @@
             <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="Padding" Value="20" />
-            <Setter Property="Margin" Value="0,0,0,14" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Padding" Value="24" />
+            <Setter Property="Margin" Value="0,0,0,16" />
         </Style>
 
         <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="17" />
+            <Setter Property="FontSize" Value="19" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
             <Setter Property="Margin" Value="0,0,0,14" />
@@ -87,6 +87,34 @@
             <Setter Property="FontSize" Value="13" />
             <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
             <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+
+        <Style x:Key="SubsectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        </Style>
+
+        <Style x:Key="HelperTextStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <Style x:Key="StatusPanelStyle" TargetType="Border">
+            <Setter Property="Padding" Value="14" />
+            <Setter Property="Background" Value="#F8FAFC" />
+            <Setter Property="BorderBrush" Value="#E2E8F0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
+
+        <Style x:Key="StepNumberStyle" TargetType="Border">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Background" Value="#EAF1FF" />
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="VerticalAlignment" Value="Top" />
         </Style>
     </Application.Resources>
 </Application>

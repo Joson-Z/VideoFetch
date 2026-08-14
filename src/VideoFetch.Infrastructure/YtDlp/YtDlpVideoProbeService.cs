@@ -71,13 +71,5 @@ public sealed class YtDlpVideoProbeService(
     }
 
     private static string BuildSafeError(ProcessResult result)
-    {
-        string firstLine = result.StandardError
-            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-            .Select(line => line.Trim())
-            .FirstOrDefault(line => line.Length > 0)
-            ?? "无法读取视频信息。";
-
-        return firstLine.Length <= 500 ? firstLine : firstLine[..500];
-    }
+        => YtDlpErrorMessageBuilder.Build(result, "无法读取视频信息。");
 }
