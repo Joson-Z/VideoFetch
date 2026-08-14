@@ -23,6 +23,8 @@ public sealed record MediaFormat
 
     public double? AudioBitrateKbps { get; init; }
 
+    public double? TotalBitrateKbps { get; init; }
+
     public string? Extension { get; init; }
 
     public long? FileSizeBytes { get; init; }
