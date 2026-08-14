@@ -1,0 +1,40 @@
+# Build outputs
+[Bb]in/
+[Oo]bj/
+[Aa]rtifacts/
+[Tt]est[Rr]esults/
+*.trx
+*.coverage
+*.coveragexml
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+_ReSharper*/
+*.DotSettings.user
+
+# Runtime data and downloaded media
+downloads/
+logs/
+temp/
+*.part
+*.ytdl
+
+# Locally supplied toolchain binaries
+tools/*.exe
+tools/*.dll
+tools/*.zip
+
+# Sensitive session data
+cookies.txt
+*.cookies.txt
+session/
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
