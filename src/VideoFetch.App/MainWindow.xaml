@@ -212,7 +212,7 @@
                                          Height="12"
                                          Minimum="0"
                                          Maximum="100"
-                                         Value="{Binding ProgressPercent}"
+                                         Value="{Binding ProgressPercent, Mode=OneWay}"
                                          Foreground="{StaticResource PrimaryBrush}" />
                             <TextBlock Margin="0,8,0,0"
                                        Text="{Binding ProgressDetail}"
